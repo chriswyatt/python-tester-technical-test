@@ -32,6 +32,8 @@ def fizz_or_buzz(number):
     is_three = True if number % 3 == 0 else False
     is_five = True if number % 5 == 0 else False
 
+    # TODO: Do we want 'fizzbuzz' to be returned if number = 0?
+
     if is_three and is_five:
         return 'fizzbuzz'
     elif is_three:
