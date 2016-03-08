@@ -32,12 +32,12 @@ def fizz_or_buzz(number):
     is_three = True if number % 3 == 0 else False
     is_five = True if number % 5 == 0 else False
 
-    if is_three:
+    if is_three and is_five:
+        return 'fizzbuzz'
+    elif is_three:
         return 'fizz'
     elif is_five:
         return 'buzz'
-    elif is_three and is_five:
-        return 'fizzbuzz'
     else:
         return ''
 
