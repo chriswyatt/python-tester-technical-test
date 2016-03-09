@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-
-from HTMLParser import HTMLParseError
+import six
 
 from requests.exceptions import ConnectionError
 from mock import patch, Mock, MagicMock, mock_open, call, sentinel
@@ -59,29 +58,6 @@ class TestElementCount(unittest.TestCase):
         requests_mock.get.assert_called_once_with(self.url)
         BeautifulSoupMock.assert_not_called()
 
-    @patch('application.BeautifulSoup')
-    @patch('application.requests')
-    def test_raises_html_parse_error(self, requests_mock, BeautifulSoupMock):
-        '''
-        element_count() shall raise a HTMLParseError if BeautifulSoup() raises
-        a HTMLParseError
-        '''
-        response_mock = Mock()
-        response_mock.text = self.response_text
-        requests_mock.get.return_value = response_mock
-
-        find_all_return_value_mock = MagicMock()
-        find_all_return_value_mock.__len__.return_value = 123
-
-        BeautifulSoupMock.side_effect = HTMLParseError('BOOM!')
-
-        self.assertRaises(HTMLParseError, element_count, self.url, self.tag)
-
-        requests_mock.get.assert_called_once_with(self.url)
-        BeautifulSoupMock.assert_called_once_with(
-            self.response_text, self.parser)
-        BeautifulSoupMock.return_value.assert_not_called()
-
 
 class TestFizzOrBuzz(unittest.TestCase):
 
@@ -91,7 +67,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         evenly divisible by both 3 and 5
         '''
         result = fizz_or_buzz(15)
-        self.assertItemsEqual([3, 5], result)
+        six.assertCountEqual(self, [3, 5], result)
 
     def test_number_divisible_by_3_not_5(self):
         '''
@@ -99,7 +75,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 3 and not 5
         '''
         result = fizz_or_buzz(6)
-        self.assertItemsEqual([3], result)
+        six.assertCountEqual(self, [3], result)
 
     def test_number_divisible_by_5_not_3(self):
         '''
@@ -107,7 +83,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 5 and not 3
         '''
         result = fizz_or_buzz(10)
-        self.assertItemsEqual([5], result)
+        six.assertCountEqual(self, [5], result)
 
     def test_number_equals_3(self):
         '''
@@ -115,7 +91,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         3
         '''
         result = fizz_or_buzz(3)
-        self.assertItemsEqual([3], result)
+        six.assertCountEqual(self, [3], result)
 
     def test_number_equals_5(self):
         '''
@@ -123,7 +99,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         5
         '''
         result = fizz_or_buzz(5)
-        self.assertItemsEqual([5], result)
+        six.assertCountEqual(self, [5], result)
 
     def test_number_not_divisible_by_3_or_5(self):
         '''
@@ -131,7 +107,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 3 or 5
         '''
         result = fizz_or_buzz(4)
-        self.assertItemsEqual([], result)
+        six.assertCountEqual(self, [], result)
 
     def test_number_equals_0(self):
         '''
@@ -139,7 +115,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         equal to 0
         '''
         result = fizz_or_buzz(0)
-        self.assertItemsEqual([3, 5], result)
+        six.assertCountEqual(self, [3, 5], result)
 
     def test_string_raises_exception(self):
         '''
@@ -165,12 +141,12 @@ class TestAppOutput(unittest.TestCase):
         open_mock.assert_called_once_with('output.txt', 'a')
         handle_mock = open_mock()
         handle_mock.write.assert_called_once_with(
-            "URL: '{}', tag: '{}', count: {}, divisors: {}\n".format(
+            "URL: '{}', tag: '{}', count: {}, divisors: [{}]\n".format(
                 self.url, self.tag, self.count,
                 ', '.join(str(d) for d in self.divisors)))
 
         print_mock.assert_called_once_with(
-            "URL: '{}', tag: '{}', count: {}, divisors: {}".format(
+            "URL: '{}', tag: '{}', count: {}, divisors: [{}]".format(
                 self.url, self.tag, self.count, 
                 ', '.join(str(d) for d in self.divisors)))
 
@@ -198,7 +174,7 @@ class TestApp(unittest.TestCase):
     def test_success(self, element_count_mock, fizz_or_buzz_mock,
                      app_output_mock):
         element_count_mock.return_value = sentinel.count
-        fizz_or_buzz_mock.return_value = sentinel.divisible_desc
+        fizz_or_buzz_mock.return_value = sentinel.divisors
 
         app(sentinel.url, sentinel.tag)
         element_count_mock.assert_called_once_with(sentinel.url, sentinel.tag)
@@ -207,7 +183,7 @@ class TestApp(unittest.TestCase):
             sentinel.url,
             sentinel.tag,
             sentinel.count,
-            sentinel.divisible_desc)
+            sentinel.divisors)
 
 
 if __name__ == '__main__':
