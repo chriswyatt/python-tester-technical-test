@@ -135,6 +135,10 @@ class TestAppOutput(unittest.TestCase):
 
     @patch('application.print')
     def test_success(self, print_mock):
+        '''
+        app_output() shall write to output.txt and print the output using the
+        print() function
+        '''
         open_mock = mock_open()
         with patch('application.open', open_mock):
             app_output(self.url, self.tag, self.count, self.divisors)
@@ -152,6 +156,10 @@ class TestAppOutput(unittest.TestCase):
 
     @patch('application.print')
     def test_raises_io_error(self, print_mock):
+        '''
+        app_output() shall raise an IOError if the file handle raises an
+        IOError
+        '''
         handle_mock = MagicMock()
         handle_mock.__enter__.side_effect = IOError
 
@@ -173,6 +181,10 @@ class TestApp(unittest.TestCase):
     @patch('application.element_count')
     def test_success(self, element_count_mock, fizz_or_buzz_mock,
                      app_output_mock):
+        '''
+        app() shall call the appropriate functions and pass the correct
+        arguments
+        '''
         element_count_mock.return_value = sentinel.count
         fizz_or_buzz_mock.return_value = sentinel.divisors
 
