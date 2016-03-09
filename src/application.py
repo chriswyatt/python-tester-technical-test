@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Chris Wyatt - 1:45am
 
@@ -13,13 +13,17 @@ from bs4 import BeautifulSoup
 
 
 def get(a):
-    # Performs a HTTP request, returning a string
+    '''
+    Performs a HTTP request, returning the response text
+    '''
     response = requests.get(a)
     return response.text
 
 
 def element_count(a, b):
-    # Element count
+    '''
+    Element count
+    '''
     output = get(a)
 
     soup = BeautifulSoup(output, 'html.parser')
@@ -28,11 +32,9 @@ def element_count(a, b):
 
 
 def fizz_or_buzz(number):
-    # Return fizz or buzz or fizzbuzz
-    # number/3 then fizz
-    # number/5 then buzz
-    # number/(3,5) then fizzbuzz
-    # number !/ (3,5) then <empty>
+    '''
+    Return divisors of a number (but only check if 3 and 5) 
+    '''
     is_three = True if number % 3 == 0 else False
     is_five = True if number % 5 == 0 else False
 
@@ -47,6 +49,9 @@ def fizz_or_buzz(number):
 
 
 def app_output(url, tag, count, divisors):
+    '''
+    Output to stdout and file
+    '''
     line = "URL: '{}', tag: '{}', count: {}, divisors: [{}]".format(
         url, tag, count, ', '.join(str(d) for d in divisors))
     with open('output.txt', 'a') as fd:
@@ -61,7 +66,7 @@ def app(url, tag):
 
 
 if __name__ == '__main__':
-    # Application will take two args URL, HTML tag type (a, ul, div, ...etc)
+    # Application will take two args: URL, HTML tag type (a, ul, div, ...etc)
     if len(sys.argv) == 1:
         url = input('URL: ')
         tag = input('Tag: ')
