@@ -1,69 +1,79 @@
+#!/usr/bin/env python
+
 # Chris Wyatt - 1:45am
 
-# Python 2,3 support
+# Python 2, 3 support
 from __future__ import print_function
 from six.moves import input
 
-import os
 import sys
-import re
+
 import requests
 from bs4 import BeautifulSoup
 
+
 def get(a):
-    # Performs a http request, returning a string
+    # Performs a HTTP request, returning a string
     response = requests.get(a)
     return response.text
 
+
 def element_count(a, b):
-    # element count
+    # Element count
     output = get(a)
 
-    soup = BeautifulSoup(output)
+    soup = BeautifulSoup(output, 'html.parser')
 
     return len(soup.find_all(b))
+
 
 def fizz_or_buzz(number):
     # Return fizz or buzz or fizzbuzz
     # number/3 then fizz
     # number/5 then buzz
-    # number/(3,5) then fizz buzz
+    # number/(3,5) then fizzbuzz
     # number !/ (3,5) then <empty>
     is_three = True if number % 3 == 0 else False
     is_five = True if number % 5 == 0 else False
 
-    # TODO: Do we want 'fizzbuzz' to be returned if number = 0?
-
     if is_three and is_five:
-        return 'fizzbuzz'
+        return [3, 5]
     elif is_three:
-        return 'fizz'
+        return [3]
     elif is_five:
-        return 'buzz'
+        return [5]
     else:
-        return ''
+        return []
 
-def app_output(*args):
+
+def app_output(url, tag, count, divisors):
+    line = "URL: '{}', tag: '{}', count: {}, divisors: [{}]".format(
+        url, tag, count, ', '.join(str(d) for d in divisors))
     with open('output.txt', 'a') as fd:
-        fd.write('{} = {} = {} = {}\n'.format(*args))
-    print('{} = {} = {} = {}\n'.format(*args))
+        fd.write(line + '\n')
+    print(line)
 
-def app(a,b):
-    count = element_count(a,b)
-    FizzBuzz = fizz_or_buzz(count)
-    app_output(a,b,count,FizzBuzz)
 
-import sys
+def app(url, tag):
+    count = element_count(url, tag)
+    divisors = fizz_or_buzz(count)
+    app_output(url, tag, count, divisors)
+
+
 if __name__ == '__main__':
-        # application will take two args url, html tag type (a, ul, div, ...etc)
-        if len(sys.argv) < 3:
-            url = input('Url: ')
-            tag = input('Tag: ')
-        else:
-            url = sys.argv[1]
-            tag = sys.argv[2]
+    # Application will take two args URL, HTML tag type (a, ul, div, ...etc)
+    if len(sys.argv) == 1:
+        url = input('URL: ')
+        tag = input('Tag: ')
+    elif len(sys.argv) == 3:
+        url = sys.argv[1]
+        tag = sys.argv[2]
+    else:
+        sys.stderr.write('Command takes 2 arguments: URL and tag\n')
+        sys.exit(1)
 
-        app(url, tag)
+    app(url, tag)
+
 
 '''
 Review comments:
