@@ -16,6 +16,7 @@ class TestElementCount(unittest.TestCase):
         self.url = 'http://foo.com/'
         self.tag = 'br'
         self.response_text = 'Foo<br>Bar<br>Baz'
+        self.parser = 'html.parser'
 
     @patch('application.BeautifulSoup')
     @patch('application.requests')
@@ -40,7 +41,8 @@ class TestElementCount(unittest.TestCase):
         self.assertEqual(123, result)
 
         requests_mock.get.assert_called_once_with(self.url)
-        BeautifulSoupMock.assert_called_once_with(self.response_text)
+        BeautifulSoupMock.assert_called_once_with(
+            self.response_text, self.parser)
         beautiful_soup_mock.find_all.assert_called_once_with(self.tag)
 
     @patch('application.BeautifulSoup')
@@ -76,7 +78,8 @@ class TestElementCount(unittest.TestCase):
         self.assertRaises(HTMLParseError, element_count, self.url, self.tag)
 
         requests_mock.get.assert_called_once_with(self.url)
-        BeautifulSoupMock.assert_called_once_with(self.response_text)
+        BeautifulSoupMock.assert_called_once_with(
+            self.response_text, self.parser)
         BeautifulSoupMock.return_value.assert_not_called()
 
 
@@ -88,7 +91,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         evenly divisible by both 3 and 5
         '''
         result = fizz_or_buzz(15)
-        self.assertEqual('fizzbuzz', result)
+        self.assertItemsEqual([3, 5], result)
 
     def test_number_divisible_by_3_not_5(self):
         '''
@@ -96,7 +99,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 3 and not 5
         '''
         result = fizz_or_buzz(6)
-        self.assertEqual('fizz', result)
+        self.assertItemsEqual([3], result)
 
     def test_number_divisible_by_5_not_3(self):
         '''
@@ -104,7 +107,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 5 and not 3
         '''
         result = fizz_or_buzz(10)
-        self.assertEqual('buzz', result)
+        self.assertItemsEqual([5], result)
 
     def test_number_equals_3(self):
         '''
@@ -112,7 +115,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         3
         '''
         result = fizz_or_buzz(3)
-        self.assertEqual('fizz', result)
+        self.assertItemsEqual([3], result)
 
     def test_number_equals_5(self):
         '''
@@ -120,7 +123,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         5
         '''
         result = fizz_or_buzz(5)
-        self.assertEqual('buzz', result)
+        self.assertItemsEqual([5], result)
 
     def test_number_not_divisible_by_3_or_5(self):
         '''
@@ -128,7 +131,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         divisible by 3 or 5
         '''
         result = fizz_or_buzz(4)
-        self.assertEqual('', result)
+        self.assertItemsEqual([], result)
 
     def test_number_equals_0(self):
         '''
@@ -136,7 +139,7 @@ class TestFizzOrBuzz(unittest.TestCase):
         equal to 0
         '''
         result = fizz_or_buzz(0)
-        self.assertEqual('fizzbuzz', result)
+        self.assertItemsEqual([3, 5], result)
 
     def test_string_raises_exception(self):
         '''
@@ -152,20 +155,24 @@ class TestAppOutput(unittest.TestCase):
         self.url = 'http://foo.com/'
         self.tag = 'br'
         self.count = 123
-        self.divisible_desc = 'bar'
+        self.divisors = [1, 2, 3]
 
     @patch('application.print')
     def test_success(self, print_mock):
         open_mock = mock_open()
         with patch('application.open', open_mock):
-            app_output(self.url, self.tag, self.count, self.divisible_desc)
+            app_output(self.url, self.tag, self.count, self.divisors)
         open_mock.assert_called_once_with('output.txt', 'a')
         handle_mock = open_mock()
-        handle_mock.write.assert_called_once_with('{} = {} = {} = {}\n'.format(
-            self.url, self.tag, self.count, self.divisible_desc))
+        handle_mock.write.assert_called_once_with(
+            "URL: '{}', tag: '{}', count: {}, divisors: {}\n".format(
+                self.url, self.tag, self.count,
+                ', '.join(str(d) for d in self.divisors)))
 
-        print_mock.assert_called_once_with('{} = {} = {} = {}\n'.format(
-            self.url, self.tag, self.count, self.divisible_desc))
+        print_mock.assert_called_once_with(
+            "URL: '{}', tag: '{}', count: {}, divisors: {}".format(
+                self.url, self.tag, self.count, 
+                ', '.join(str(d) for d in self.divisors)))
 
     @patch('application.print')
     def test_raises_io_error(self, print_mock):
@@ -176,7 +183,8 @@ class TestAppOutput(unittest.TestCase):
         open_mock.return_value = handle_mock
 
         with patch('application.open', open_mock):
-            self.assertRaises(IOError, app_output, None, None, None, None)
+            self.assertRaises(IOError, app_output, self.url, self.tag,
+                              self.count, self.divisors)
         open_mock.assert_called_once_with('output.txt', 'a')
 
         print_mock.assert_not_called()
